@@ -218,33 +218,6 @@ def list_countries(
         q = q.order_by(Country.estimated_gdp.asc())
     return q.all()
 
-
-@app.get("/countries/{name}", response_model=CountryOut)
-def get_country(name: str, db: Session = Depends(get_db)):
-    c = db.query(Country).filter(func.lower(Country.name) == name.lower()).first()
-    if not c:
-        return JSONResponse(status_code=404, content={"error": "Country not found"})
-    return c
-
-
-@app.delete("/countries/{name}")
-def delete_country(name: str, db: Session = Depends(get_db)):
-    c = db.query(Country).filter(func.lower(Country.name) == name.lower()).first()
-    if not c:
-        return JSONResponse(status_code=404, content={"error": "Country not found"})
-    db.delete(c)
-    db.commit()
-    return {"success": True}
-
-
-@app.get("/status")
-def status(db: Session = Depends(get_db)):
-    total = db.query(func.count(Country.id)).scalar() or 0
-    meta = db.query(Meta).filter(Meta.key == "last_refreshed_at").first()
-    last = meta.value if meta else None
-    return {"total_countries": total, "last_refreshed_at": last}
-
-
 @app.get("/countries/image")
 def get_image(db: Session = Depends(get_db)):
     path = Path("cache") / "summary.png"
@@ -292,3 +265,31 @@ def get_image(db: Session = Depends(get_db)):
     except Exception:
         # If generation fails, return the standard 404 JSON
         return JSONResponse(status_code=404, content={"error": "Summary image not found"})
+
+
+@app.get("/countries/{name}", response_model=CountryOut)
+def get_country(name: str, db: Session = Depends(get_db)):
+    c = db.query(Country).filter(func.lower(Country.name) == name.lower()).first()
+    if not c:
+        return JSONResponse(status_code=404, content={"error": "Country not found"})
+    return c
+
+
+@app.delete("/countries/{name}")
+def delete_country(name: str, db: Session = Depends(get_db)):
+    c = db.query(Country).filter(func.lower(Country.name) == name.lower()).first()
+    if not c:
+        return JSONResponse(status_code=404, content={"error": "Country not found"})
+    db.delete(c)
+    db.commit()
+    return {"success": True}
+
+
+@app.get("/status")
+def status(db: Session = Depends(get_db)):
+    total = db.query(func.count(Country.id)).scalar() or 0
+    meta = db.query(Meta).filter(Meta.key == "last_refreshed_at").first()
+    last = meta.value if meta else None
+    return {"total_countries": total, "last_refreshed_at": last}
+
+
