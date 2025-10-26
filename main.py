@@ -64,7 +64,10 @@ class CountryOut(BaseModel):
     last_refreshed_at: Optional[datetime]
 
     class Config:
-        orm_mode = True
+        # Pydantic v2 renamed `orm_mode` -> `from_attributes`.
+        # Use `from_attributes = True` for Pydantic v2 compatibility.
+        # Keep only `from_attributes` to avoid the v2 warning.
+        from_attributes = True
 
 
 @app.post("/countries/refresh")
